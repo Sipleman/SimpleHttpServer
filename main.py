@@ -1,13 +1,12 @@
+import posixpath
 import socket
 import os
 import xml.etree.ElementTree as ET
-from copy import copy
-from xml.dom import minidom
-
+import sys
 
 class HttpServer:
-    def __init__(self):
-        self.HOST, self.PORT = '', 8008
+    def __init__(self, PORT):
+        self.HOST, self.PORT = '', PORT
         self.s = socket.socket(socket.AF_INET)
         self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.s.bind((self.HOST, self.PORT))
@@ -81,5 +80,10 @@ class HttpServer:
             client_connection.close()
 
 
-server = HttpServer()
+PORT = 8000
+
+if len(sys.argv) == 2 and str(sys.argv[1]).isdigit():
+    PORT = int(sys.argv[1])
+
+server = HttpServer(PORT)
 server.run()
