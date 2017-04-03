@@ -13,10 +13,17 @@ class HttpServer:
         self.s.bind((self.HOST, self.PORT))
         self.MSG_LEN = 1024
 
+    def get_file_content(self, file_path):
+        if '.' in file_path:
+            with open(file_path[1:]) as f:
+                content = f.read()
+                return content
+
     def get_content_from_dir(self, dir_path):
         content = {"files": [], "folders": []}
         if "favicon.ico" == dir_path:
             return content
+
         print(dir_path)
         dir_path = dir_path[1:]
         print(dir_path)
@@ -44,7 +51,8 @@ class HttpServer:
             link_tag.text = directory
             br_tag = ET.SubElement(link_tag, 'br')
         for file in content["files"]:
-            file_tag = ET.SubElement(body_tag, 'p')
+            href = {'href': file}
+            file_tag = ET.SubElement(body_tag, 'a', attrib=href)
             file_tag.text = file
 
         return ET.tostring(html_tag)
@@ -60,10 +68,15 @@ class HttpServer:
                 with open('index.html') as f:
                     response_data = str.encode(f.read())
             else:
+                response_data = ''
                 if address_path == "/favicon.ico":
                     continue
-                content = self.get_content_from_dir(address_path)
-                response_data = self.form_html_page(content)
+                if '.' in address_path:
+                    response_data = str.encode(self.get_file_content(address_path))
+                else:
+                    content = self.get_content_from_dir(address_path)
+                    response_data = self.form_html_page(content)
+
             client_connection.sendall(response_data)
             client_connection.close()
 
